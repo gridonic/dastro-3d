@@ -1,0 +1,14 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "@astrojs/ts-plugin"
+      }
+    ],
+    "baseUrl": ".",
+    "verbatimModuleSyntax": true,
+    "jsx": "preserve"
+  },
+  "include": [".astro/types.d.ts", "env.d.ts", "src"]
+}

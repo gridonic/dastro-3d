@@ -1,0 +1,38 @@
+{
+  "name": "dastro-3d",
+  "version": "0.1.0",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "npm run astro:check:watch",
+    "astro:check": "astro check",
+    "astro:check:watch": "astro check --watch --preserveWatchOutput"
+  },
+  "exports": {
+    "./components": "./src/components/index.ts"
+  },
+  "files": [
+    "docs",
+    "src",
+    ".node-version"
+  ],
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "description": "Render 3D models uploaded to DatoCMS on Astro/Dastro websites",
+  "peerDependencies": {
+    "@datocms/astro": "^0.6.12",
+    "astro": "^6.3.5",
+    "dastro": "github:gridonic/dastro#semver:^2.1.5"
+  },
+  "dependencies": {
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@types/three": "^0.185.1",
+    "prettier": "^3.8.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "sass-embedded": "^1.99.0",
+    "typescript": "^6.0.3"
+  }
+}

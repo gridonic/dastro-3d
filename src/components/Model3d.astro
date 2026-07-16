@@ -1,0 +1,126 @@
+---
+import { stripStega } from '@datocms/astro';
+import { ImageAsset } from 'dastro/components';
+import type { ClassValue, ModelViewerData } from './component.types';
+import { parseEnvironment, parseLoadTrigger } from './component.types';
+
+interface Props {
+  data: ModelViewerData;
+  class?: ClassValue;
+  /** The box is the wrapper's business — Content3d and Header3d frame it differently. */
+  aspectRatio?: number;
+  /** Passed to the Poster. Header modules should size for the viewport. */
+  sizes?: string;
+}
+
+const { data, class: classNames, aspectRatio, sizes } = Astro.props;
+
+// Draft mode injects invisible stega characters into every Dato string. An
+// un-stripped URL will not fetch, and an un-stripped select never matches.
+const modelUrl = stripStega(data.model.url);
+const loadTrigger = parseLoadTrigger(stripStega(data.loadTrigger ?? ''));
+const environment = parseEnvironment(stripStega(data.environment ?? ''));
+const autoRotate = data.autoRotate ?? false;
+---
+
+<script>
+  import { registerComponent } from 'dastro/client';
+  import { ModelViewer } from '../client/model-viewer.client';
+
+  registerComponent('[data-model-3d]', ModelViewer);
+</script>
+
+<div
+  class="model-3d"
+  class:list={[classNames, `-${loadTrigger}`]}
+  style={aspectRatio ? `aspect-ratio: ${aspectRatio};` : undefined}
+  data-model-3d
+  data-model-url={modelUrl}
+  data-load-trigger={loadTrigger}
+  data-environment={environment}
+  data-auto-rotate={String(autoRotate)}
+>
+  <canvas class="canvas"></canvas>
+
+  <div class="poster">
+    {
+      data.poster && (
+        <ImageAsset data={data.poster} class="image" sizes={sizes} />
+      )
+    }
+    {
+      loadTrigger === 'click' && (
+        <button class="button" type="button">
+          <span class="label">View in 3D</span>
+        </button>
+      )
+    }
+  </div>
+</div>
+
+<style lang="scss">
+  .model-3d {
+    position: relative;
+    display: block;
+    width: 100%;
+
+    > .canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      // Let the page scroll past a viewer until it can actually be interacted with.
+      touch-action: pan-y;
+    }
+
+    &.-ready > .canvas {
+      opacity: 1;
+      touch-action: none;
+    }
+
+    > .poster {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease;
+
+      > .image {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+      }
+
+      :global(img) {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    // The Poster is the no-WebGL and failed-load fallback, so it is only ever
+    // hidden once the canvas has something on it.
+    &.-ready > .poster {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    > .poster > .button {
+      position: relative;
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.75rem 1.5rem;
+      border-radius: 2rem;
+      background-color: var(--base-color-background, #fff);
+      color: var(--base-color-foreground, #000);
+    }
+
+    &.-loading > .poster > .button {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+</style>
