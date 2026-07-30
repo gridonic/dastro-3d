@@ -1,7 +1,11 @@
 ---
 import { stripStega } from '@datocms/astro';
 import { ImageAsset } from 'dastro/components';
-import type { ClassValue, ModelViewerData } from './component.types';
+import type {
+  BackgroundColorValue,
+  ClassValue,
+  ModelViewerData,
+} from './component.types';
 import { parseEnvironment, parseLoadTrigger } from './component.types';
 
 interface Props {
@@ -11,8 +15,8 @@ interface Props {
   aspectRatio?: number;
   /** Passed to the Poster. Header modules should size for the viewport. */
   sizes?: string;
-  /** Canvas background. Replaces `data.environment` when set. */
-  backgroundColor?: string;
+  /** Canvas background. Accepts CSS string or `{ hex | rgba }`. */
+  backgroundColor?: string | BackgroundColorValue;
   /** Initial camera distance multiplier after auto-framing. Default `1.25`. */
   zoom?: number;
 }
@@ -24,9 +28,23 @@ const { data, class: classNames, aspectRatio, sizes, backgroundColor, zoom } =
 // un-stripped URL will not fetch, and an un-stripped select never matches.
 const modelUrl = stripStega(data.model.url);
 const loadTrigger = parseLoadTrigger(stripStega(data.loadTrigger ?? ''));
-const resolvedBackgroundColor =
-  backgroundColor ??
-  (stripStega(data.backgroundColor ?? '') || undefined);
+function normalizeBackgroundColor(
+  value: string | BackgroundColorValue | null | undefined,
+): string | undefined {
+  if (!value) return undefined;
+  if (typeof value === 'string') return stripStega(value) || undefined;
+  if (value.hex) return stripStega(value.hex) || undefined;
+  if (!value.rgba) return undefined;
+  if (typeof value.rgba === 'string') return stripStega(value.rgba) || undefined;
+
+  const alpha = value.rgba.alpha ?? 1;
+  return `rgba(${value.rgba.red}, ${value.rgba.green}, ${value.rgba.blue}, ${alpha})`;
+}
+
+const resolvedBackgroundColor = normalizeBackgroundColor(
+  backgroundColor ?? data.backgroundColor,
+);
+const resolvedZoom = zoom ?? data.zoom ?? undefined;
 const environment = resolvedBackgroundColor
   ? undefined
   : parseEnvironment(stripStega(data.environment ?? ''));
@@ -50,7 +68,7 @@ const autoRotate = data.autoRotate ?? false;
   data-environment={environment}
   data-auto-rotate={String(autoRotate)}
   data-background-color={resolvedBackgroundColor}
-  data-zoom={zoom}
+  data-zoom={resolvedZoom}
 >
   <canvas class="canvas"></canvas>
 

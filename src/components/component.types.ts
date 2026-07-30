@@ -2,6 +2,18 @@ import type { AstroBuiltinAttributes } from 'astro';
 
 export type ClassValue = AstroBuiltinAttributes['class:list'];
 
+export interface RgbaColorValue {
+  red: number;
+  green: number;
+  blue: number;
+  alpha?: number | null;
+}
+
+export interface BackgroundColorValue {
+  hex?: string | null;
+  rgba?: RgbaColorValue | string | null;
+}
+
 /**
  * The Viewer Contract.
  *
@@ -24,8 +36,10 @@ export interface ModelViewerData {
   loadTrigger?: string | null;
   /** DatoCMS select field. Carries stega — narrow with `parseEnvironment`. */
   environment?: string | null;
-  /** Canvas background. Replaces `environment` when set. Carries stega — strip before use. */
-  backgroundColor?: string | null;
+  /** Canvas background. Replaces `environment` when set. */
+  backgroundColor?: string | BackgroundColorValue | null;
+  /** Initial camera distance multiplier after auto-framing. */
+  zoom?: number | null;
   autoRotate?: boolean | null;
 }
 

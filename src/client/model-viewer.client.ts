@@ -8,10 +8,13 @@ import type { ModelStage } from './stage.client';
 /** How early an `approach` viewer starts loading, ahead of entering the viewport. */
 const APPROACH_ROOT_MARGIN = '200px';
 
-function parseOptionalZoom(value: string | undefined): number | undefined {
+function parseOptionalZoom(
+  value: string | number | undefined,
+): number | undefined {
   if (value === undefined) return undefined;
 
-  const zoom = Number.parseFloat(value);
+  const zoom =
+    typeof value === 'number' ? value : Number.parseFloat(value);
   return Number.isFinite(zoom) ? zoom : undefined;
 }
 
