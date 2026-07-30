@@ -8,6 +8,13 @@ import type { ModelStage } from './stage.client';
 /** How early an `approach` viewer starts loading, ahead of entering the viewport. */
 const APPROACH_ROOT_MARGIN = '200px';
 
+function parseOptionalZoom(value: string | undefined): number | undefined {
+  if (value === undefined) return undefined;
+
+  const zoom = Number.parseFloat(value);
+  return Number.isFinite(zoom) ? zoom : undefined;
+}
+
 /**
  * Owns *when* the Model loads, never *how* it renders.
  *
@@ -69,11 +76,17 @@ export class ModelViewer extends BaseComponent {
     try {
       const { ModelStage } = await import('./stage.client');
 
+      const backgroundColor = this.$el.dataset.backgroundColor;
+
       const stage = new ModelStage($canvas, {
-        environment: parseEnvironment(this.$el.dataset.environment),
+        environment: backgroundColor
+          ? undefined
+          : parseEnvironment(this.$el.dataset.environment),
         autoRotate:
           this.$el.dataset.autoRotate === 'true' &&
           !this.prefersReducedMotion(),
+        backgroundColor,
+        zoom: parseOptionalZoom(this.$el.dataset.zoom),
       });
 
       await stage.load(url);

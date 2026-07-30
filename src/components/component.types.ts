@@ -24,6 +24,8 @@ export interface ModelViewerData {
   loadTrigger?: string | null;
   /** DatoCMS select field. Carries stega — narrow with `parseEnvironment`. */
   environment?: string | null;
+  /** Canvas background. Replaces `environment` when set. Carries stega — strip before use. */
+  backgroundColor?: string | null;
   autoRotate?: boolean | null;
 }
 

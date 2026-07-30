@@ -11,15 +11,25 @@ interface Props {
   aspectRatio?: number;
   /** Passed to the Poster. Header modules should size for the viewport. */
   sizes?: string;
+  /** Canvas background. Replaces `data.environment` when set. */
+  backgroundColor?: string;
+  /** Initial camera distance multiplier after auto-framing. Default `1.25`. */
+  zoom?: number;
 }
 
-const { data, class: classNames, aspectRatio, sizes } = Astro.props;
+const { data, class: classNames, aspectRatio, sizes, backgroundColor, zoom } =
+  Astro.props;
 
 // Draft mode injects invisible stega characters into every Dato string. An
 // un-stripped URL will not fetch, and an un-stripped select never matches.
 const modelUrl = stripStega(data.model.url);
 const loadTrigger = parseLoadTrigger(stripStega(data.loadTrigger ?? ''));
-const environment = parseEnvironment(stripStega(data.environment ?? ''));
+const resolvedBackgroundColor =
+  backgroundColor ??
+  (stripStega(data.backgroundColor ?? '') || undefined);
+const environment = resolvedBackgroundColor
+  ? undefined
+  : parseEnvironment(stripStega(data.environment ?? ''));
 const autoRotate = data.autoRotate ?? false;
 ---
 
@@ -39,6 +49,8 @@ const autoRotate = data.autoRotate ?? false;
   data-load-trigger={loadTrigger}
   data-environment={environment}
   data-auto-rotate={String(autoRotate)}
+  data-background-color={resolvedBackgroundColor}
+  data-zoom={zoom}
 >
   <canvas class="canvas"></canvas>
 

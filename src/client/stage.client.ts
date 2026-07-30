@@ -25,8 +25,12 @@ import type { ModelEnvironment } from '../components/component.types';
  */
 
 interface StageOptions {
-  environment: ModelEnvironment;
+  /** Lighting preset. Defaults to `studio` when omitted (e.g. a custom background is set). */
+  environment?: ModelEnvironment;
   autoRotate: boolean;
+  /** Replaces the environment preset's background when set. */
+  backgroundColor?: string;
+  zoom?: number;
 }
 
 /**
@@ -55,6 +59,7 @@ export class ModelStage {
   private readonly controls: OrbitControls;
   private readonly pmrem: PMREMGenerator;
   private readonly resizeObserver: ResizeObserver;
+  private readonly zoom: number;
 
   private model: Object3D | null = null;
   private frameId: number | null = null;
@@ -63,7 +68,8 @@ export class ModelStage {
     private readonly $canvas: HTMLCanvasElement,
     options: StageOptions,
   ) {
-    const preset = ENVIRONMENTS[options.environment];
+    const preset = ENVIRONMENTS[options.environment ?? 'studio'];
+    this.zoom = options.zoom ?? FRAMING_MARGIN;
 
     this.renderer = new WebGLRenderer({
       canvas: $canvas,
@@ -74,7 +80,9 @@ export class ModelStage {
     this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = preset.exposure;
 
-    this.scene.background = new Color(preset.background);
+    this.scene.background = options.backgroundColor
+      ? new Color(options.backgroundColor)
+      : new Color(preset.background);
     this.scene.environmentIntensity = preset.intensity;
 
     this.pmrem = new PMREMGenerator(this.renderer);
@@ -115,7 +123,7 @@ export class ModelStage {
     $model.position.sub(sphere.center);
 
     const fov = MathUtils.degToRad(this.camera.fov);
-    const distance = (sphere.radius / Math.sin(fov / 2)) * FRAMING_MARGIN;
+    const distance = (sphere.radius / Math.sin(fov / 2)) * this.zoom;
 
     this.camera.position.set(0, sphere.radius * 0.25, distance);
     this.camera.near = distance / 100;
