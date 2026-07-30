@@ -9,7 +9,7 @@ Renders a glb uploaded to DatoCMS as an interactive product viewer — orbit, au
 See [docs/install.instruction.md](./docs/install.instruction.md) — the package is one step of several, since the DatoCMS schema and the module wrappers live in the project.
 
 ```bash
-npm i github:gridonic/dastro-3d#v0.1.0
+npm i github:gridonic/dastro-3d#v0.1.1
 ```
 
 ## Use
