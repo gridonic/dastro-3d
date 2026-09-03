@@ -25,6 +25,8 @@ export interface BackgroundColorValue {
  */
 export interface ModelViewerData {
   __typename?: 'Model3dRecord';
+  /** Click-to-load button label. Carries stega — render as text, do not strip. */
+  viewLabel?: string | null;
   model: {
     __typename?: 'FileField';
     url: string;

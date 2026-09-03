@@ -36,7 +36,7 @@ const {
   zoom,
   rotateCursor,
   rotateCursorScale,
-  viewLabel = 'View in 3D',
+  viewLabel,
 } = Astro.props;
 
 // Draft mode injects invisible stega characters into every Dato string. An
@@ -60,6 +60,7 @@ const resolvedBackgroundColor = normalizeBackgroundColor(
   backgroundColor ?? data.backgroundColor,
 );
 const resolvedZoom = zoom ?? data.zoom ?? undefined;
+const resolvedViewLabel = viewLabel ?? data.viewLabel ?? 'View in 3D';
 const environment = resolvedBackgroundColor
   ? undefined
   : parseEnvironment(stripStega(data.environment ?? ''));
@@ -102,7 +103,7 @@ const viewerStyle = aspectRatio
     {
       loadTrigger === 'click' && (
         <button class="button" type="button">
-          <span class="label">{viewLabel}</span>
+          <span class="label">{resolvedViewLabel}</span>
         </button>
       )
     }

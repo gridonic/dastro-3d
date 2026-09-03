@@ -123,6 +123,7 @@ These `api_key`s are effectively permanent — there is no migration tooling and
 | `load_trigger` | select | `approach` \| `click` |
 | `auto_rotate` | boolean | suppressed under `prefers-reduced-motion` |
 | `environment` | select | `studio` \| `neutral` \| `dark` |
+| `view_label` | string | click-to-load button text; default `View in 3D` |
 
 Exposure and camera framing are **Model Viewer** defaults, not editor knobs — fewer permanent `api_key`s, and fewer ways for an editor to make a model look bad.
 
