@@ -9,7 +9,7 @@ Renders a glb uploaded to DatoCMS as an interactive product viewer — orbit, au
 See [docs/install.instruction.md](./docs/install.instruction.md) — the package is one step of several, since the DatoCMS schema and the module wrappers live in the project.
 
 ```bash
-npm i github:gridonic/dastro-3d#v0.1.2
+npm i github:gridonic/dastro-3d#v0.1.3
 ```
 
 ## Use
@@ -25,12 +25,13 @@ import { Model3d } from 'dastro-3d/components';
   sizes="88vw"
   zoom={1.35}
   backgroundColor={{ rgba: { red: 17, green: 24, blue: 39, alpha: 0.92 } }}
+  rotateCursor="/icons/rotate.svg"
 />
 ```
 
 `data` is the `...ModelViewer` fragment. The wrapper owns the box (grid, aspect ratio, height); the component owns the render.
 
-`zoom` is optional and controls initial camera distance after framing. `backgroundColor` is optional and replaces the environment background when present; pass either a CSS color string, `{ hex: "#111827" }`, or `{ rgba: { red, green, blue, alpha } }`.
+`zoom` is optional and controls initial camera distance after framing. `backgroundColor` is optional and replaces the environment background when present; pass either a CSS color string, `{ hex: "#111827" }`, or `{ rgba: { red, green, blue, alpha } }`. `rotateCursor` is optional — a URL to an image in the consuming project, used as the canvas cursor once the model can be rotated.
 
 ## What it costs
 

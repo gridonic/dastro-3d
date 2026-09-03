@@ -19,10 +19,22 @@ interface Props {
   backgroundColor?: string | BackgroundColorValue;
   /** Initial camera distance multiplier after auto-framing. Default `1.25`. */
   zoom?: number;
+  /** Custom cursor image URL when the ready canvas is hovered. */
+  rotateCursor?: string;
+  /** Hotspot for `rotateCursor`. Defaults to `16 16`. */
+  rotateCursorHotspot?: { x: number; y: number };
 }
 
-const { data, class: classNames, aspectRatio, sizes, backgroundColor, zoom } =
-  Astro.props;
+const {
+  data,
+  class: classNames,
+  aspectRatio,
+  sizes,
+  backgroundColor,
+  zoom,
+  rotateCursor,
+  rotateCursorHotspot,
+} = Astro.props;
 
 // Draft mode injects invisible stega characters into every Dato string. An
 // un-stripped URL will not fetch, and an un-stripped select never matches.
@@ -49,6 +61,14 @@ const environment = resolvedBackgroundColor
   ? undefined
   : parseEnvironment(stripStega(data.environment ?? ''));
 const autoRotate = data.autoRotate ?? false;
+
+const cursorHotspot = rotateCursorHotspot ?? { x: 16, y: 16 };
+const viewerStyle = [
+  aspectRatio ? `aspect-ratio: ${aspectRatio};` : undefined,
+  rotateCursor
+    ? `--model-3d-rotate-cursor: url("${rotateCursor}") ${cursorHotspot.x} ${cursorHotspot.y}, grab;`
+    : undefined,
+].filter(Boolean).join(' ') || undefined;
 ---
 
 <script>
@@ -61,7 +81,7 @@ const autoRotate = data.autoRotate ?? false;
 <div
   class="model-3d"
   class:list={[classNames, `-${loadTrigger}`]}
-  style={aspectRatio ? `aspect-ratio: ${aspectRatio};` : undefined}
+  style={viewerStyle}
   data-model-3d
   data-model-url={modelUrl}
   data-load-trigger={loadTrigger}
@@ -107,6 +127,15 @@ const autoRotate = data.autoRotate ?? false;
     &.-ready > .canvas {
       opacity: 1;
       touch-action: none;
+
+      &:hover {
+        cursor: var(--model-3d-rotate-cursor, grab);
+      }
+
+      &:active,
+      &.-dragging {
+        cursor: var(--model-3d-rotate-cursor, grabbing);
+      }
     }
 
     > .poster {

@@ -99,6 +99,13 @@ export class ModelStage {
     this.controls.autoRotate = options.autoRotate;
     this.controls.autoRotateSpeed = AUTO_ROTATE_SPEED;
 
+    this.controls.addEventListener('start', () => {
+      $canvas.classList.add('-dragging');
+    });
+    this.controls.addEventListener('end', () => {
+      $canvas.classList.remove('-dragging');
+    });
+
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe($canvas);
     this.resize();
