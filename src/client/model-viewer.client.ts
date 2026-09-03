@@ -36,6 +36,8 @@ export class ModelViewer extends BaseComponent {
       return;
     }
 
+    this.prepareRotateCursor();
+
     const trigger = parseLoadTrigger(this.$el.dataset.loadTrigger);
 
     if (trigger === 'click') {
@@ -46,6 +48,18 @@ export class ModelViewer extends BaseComponent {
     }
 
     this.observeApproach();
+  }
+
+  /**
+   * CSS cannot scale cursor images, so the rewrite lives in its own chunk and
+   * is only fetched when a custom icon is actually set.
+   */
+  private prepareRotateCursor(): void {
+    if (!this.$el.dataset.rotateCursor) return;
+
+    void import('./rotate-cursor.client').then(({ applyRotateCursor }) =>
+      applyRotateCursor(this.$el),
+    );
   }
 
   private observeApproach(): void {

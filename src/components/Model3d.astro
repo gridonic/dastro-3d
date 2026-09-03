@@ -21,8 +21,8 @@ interface Props {
   zoom?: number;
   /** Custom cursor image URL when the ready canvas is hovered. */
   rotateCursor?: string;
-  /** Hotspot for `rotateCursor`. Defaults to `16 16`. */
-  rotateCursorHotspot?: { x: number; y: number };
+  /** Multiplier for `rotateCursor`. The hotspot is always the icon's centre. */
+  rotateCursorScale?: number;
 }
 
 const {
@@ -33,7 +33,7 @@ const {
   backgroundColor,
   zoom,
   rotateCursor,
-  rotateCursorHotspot,
+  rotateCursorScale,
 } = Astro.props;
 
 // Draft mode injects invisible stega characters into every Dato string. An
@@ -62,13 +62,9 @@ const environment = resolvedBackgroundColor
   : parseEnvironment(stripStega(data.environment ?? ''));
 const autoRotate = data.autoRotate ?? false;
 
-const cursorHotspot = rotateCursorHotspot ?? { x: 16, y: 16 };
-const viewerStyle = [
-  aspectRatio ? `aspect-ratio: ${aspectRatio};` : undefined,
-  rotateCursor
-    ? `--model-3d-rotate-cursor: url("${rotateCursor}") ${cursorHotspot.x} ${cursorHotspot.y}, grab;`
-    : undefined,
-].filter(Boolean).join(' ') || undefined;
+const viewerStyle = aspectRatio
+  ? `aspect-ratio: ${aspectRatio};`
+  : undefined;
 ---
 
 <script>
@@ -89,6 +85,8 @@ const viewerStyle = [
   data-auto-rotate={String(autoRotate)}
   data-background-color={resolvedBackgroundColor}
   data-zoom={resolvedZoom}
+  data-rotate-cursor={rotateCursor}
+  data-rotate-cursor-scale={rotateCursorScale}
 >
   <canvas class="canvas"></canvas>
 
@@ -144,17 +142,21 @@ const viewerStyle = [
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
       transition: opacity 0.4s ease;
 
       > .image {
         position: absolute;
         inset: 0;
+        display: block;
         height: 100%;
       }
 
+      :global(picture),
       :global(img) {
+        display: block;
         width: 100%;
-        height: 100%;
+        height: 100% !important;
         object-fit: cover;
       }
     }
