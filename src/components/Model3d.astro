@@ -23,6 +23,8 @@ interface Props {
   rotateCursor?: string;
   /** Multiplier for `rotateCursor`. The hotspot is always the icon's centre. */
   rotateCursorScale?: number;
+  /** Label on the click-to-load button. Default `View in 3D`. */
+  viewLabel?: string;
 }
 
 const {
@@ -34,6 +36,7 @@ const {
   zoom,
   rotateCursor,
   rotateCursorScale,
+  viewLabel = 'View in 3D',
 } = Astro.props;
 
 // Draft mode injects invisible stega characters into every Dato string. An
@@ -99,7 +102,7 @@ const viewerStyle = aspectRatio
     {
       loadTrigger === 'click' && (
         <button class="button" type="button">
-          <span class="label">View in 3D</span>
+          <span class="label">{viewLabel}</span>
         </button>
       )
     }
