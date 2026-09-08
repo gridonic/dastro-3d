@@ -28,6 +28,8 @@ interface StageOptions {
   /** Lighting preset. Defaults to `studio` when omitted (e.g. a custom background is set). */
   environment?: ModelEnvironment;
   autoRotate: boolean;
+  /** When `false`, orbit and zoom are disabled. Default `true`. */
+  interactive?: boolean;
   /** Replaces the environment preset's background when set. */
   backgroundColor?: string;
   zoom?: number;
@@ -96,6 +98,8 @@ export class ModelStage {
     this.controls = new OrbitControls(this.camera, $canvas);
     this.controls.enableDamping = true;
     this.controls.enablePan = false;
+    this.controls.enableRotate = options.interactive !== false;
+    this.controls.enableZoom = options.interactive !== false;
     this.controls.autoRotate = options.autoRotate;
     this.controls.autoRotateSpeed = AUTO_ROTATE_SPEED;
 

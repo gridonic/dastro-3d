@@ -33,7 +33,7 @@ import { Model3d } from 'dastro-3d/components';
 
 `data` is the `...ModelViewer` fragment. The wrapper owns the box (grid, aspect ratio, height); the component owns the render.
 
-`zoom` is optional and controls initial camera distance after framing. `backgroundColor` is optional and replaces the environment background when present; pass either a CSS color string, `{ hex: "#111827" }`, or `{ rgba: { red, green, blue, alpha } }`. `rotateCursor` is optional — a URL to an image in the consuming project, used as the canvas cursor once the model can be rotated. `rotateCursorScale` is optional (default `1`); the hotspot is always the centre of the scaled icon. `viewLabel` is optional (default `View in 3D`) and is the click-to-load button label when `loadTrigger` is `click`. Pass it as a prop to override, or set it on the `model_3d` block.
+`zoom` is optional and controls initial camera distance after framing. `backgroundColor` is optional and replaces the environment background when present; pass either a CSS color string, `{ hex: "#111827" }`, or `{ rgba: { red, green, blue, alpha } }`. `rotateCursor` is optional — a URL to an image in the consuming project, used as the canvas cursor once the model can be rotated. `rotateCursorScale` is optional (default `1`); the hotspot is always the centre of the scaled icon. `viewLabel` is optional (default `View in 3D`) and is the click-to-load button label when `loadTrigger` is `click`. Pass it as a prop to override, or set it on the `model_3d` block. `isInteractive` lives on the `model_3d` block (default `true`); set it to `false` to show the model without orbit or zoom.
 
 ## What it costs
 

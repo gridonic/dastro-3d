@@ -122,6 +122,7 @@ These `api_key`s are effectively permanent — there is no migration tooling and
 | `poster` | image | goes through imgix; also the no-WebGL fallback |
 | `load_trigger` | select | `approach` \| `click` |
 | `auto_rotate` | boolean | suppressed under `prefers-reduced-motion` |
+| `is_interactive` | boolean | when `false`, orbit and zoom are disabled; default `true` |
 | `environment` | select | `studio` \| `neutral` \| `dark` |
 | `view_label` | string | click-to-load button text; default `View in 3D` |
 

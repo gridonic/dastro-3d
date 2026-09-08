@@ -36,7 +36,9 @@ export class ModelViewer extends BaseComponent {
       return;
     }
 
-    this.prepareRotateCursor();
+    if (this.isInteractive()) {
+      this.prepareRotateCursor();
+    }
 
     const trigger = parseLoadTrigger(this.$el.dataset.loadTrigger);
 
@@ -102,6 +104,7 @@ export class ModelViewer extends BaseComponent {
         autoRotate:
           this.$el.dataset.autoRotate === 'true' &&
           !this.prefersReducedMotion(),
+        interactive: this.isInteractive(),
         backgroundColor,
         zoom: parseOptionalZoom(this.$el.dataset.zoom),
       });
@@ -143,6 +146,10 @@ export class ModelViewer extends BaseComponent {
         this.$el.dataset.autoRotate === 'true' && !query.matches,
       );
     });
+  }
+
+  private isInteractive(): boolean {
+    return this.$el.dataset.isInteractive !== 'false';
   }
 
   private prefersReducedMotion(): boolean {

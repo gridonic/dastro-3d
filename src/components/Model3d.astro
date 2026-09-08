@@ -65,6 +65,7 @@ const environment = resolvedBackgroundColor
   ? undefined
   : parseEnvironment(stripStega(data.environment ?? ''));
 const autoRotate = data.autoRotate ?? false;
+const isInteractive = data.isInteractive ?? true;
 
 const viewerStyle = aspectRatio
   ? `aspect-ratio: ${aspectRatio};`
@@ -80,13 +81,14 @@ const viewerStyle = aspectRatio
 
 <div
   class="model-3d"
-  class:list={[classNames, `-${loadTrigger}`]}
+  class:list={[classNames, `-${loadTrigger}`, !isInteractive && '-static']}
   style={viewerStyle}
   data-model-3d
   data-model-url={modelUrl}
   data-load-trigger={loadTrigger}
   data-environment={environment}
   data-auto-rotate={String(autoRotate)}
+  data-is-interactive={String(isInteractive)}
   data-background-color={resolvedBackgroundColor}
   data-zoom={resolvedZoom}
   data-rotate-cursor={rotateCursor}
@@ -138,6 +140,12 @@ const viewerStyle = aspectRatio
       &.-dragging {
         cursor: var(--model-3d-rotate-cursor, grabbing);
       }
+    }
+
+    &.-ready.-static > .canvas {
+      touch-action: pan-y;
+      pointer-events: none;
+      cursor: default;
     }
 
     > .poster {

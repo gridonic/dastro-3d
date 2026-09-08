@@ -33,6 +33,7 @@ Create a **block** with api_key `model_3d`:
 | Load trigger | `load_trigger` | Single-line string, select dropdown | **Required.** Values: `approach`, `click`. Default `approach` |
 | Environment | `environment` | Single-line string, select dropdown | **Required.** Values: `studio`, `neutral`, `dark`. Default `studio` |
 | Auto rotate | `auto_rotate` | Boolean | Default `true` |
+| Interactive | `is_interactive` | Boolean | Default `true`. When false, the model cannot be orbited or zoomed |
 | View label | `view_label` | Single-line string | Optional. Click-to-load button text. Default in the viewer: `View in 3D` |
 
 > The **8 MB file-size validation is the only hard guardrail** against an editor uploading an 80 MB Blender export. Nothing else in the stack stops it — DatoCMS does no processing on glb whatsoever (no LOD, no compression, no transcode; see ADR-0002). Do not skip it.
@@ -69,6 +70,7 @@ fragment ModelViewer on Model3dRecord {
   loadTrigger
   environment
   autoRotate
+  isInteractive
   viewLabel
 }
 ```

@@ -43,6 +43,8 @@ export interface ModelViewerData {
   /** Initial camera distance multiplier after auto-framing. */
   zoom?: number | null;
   autoRotate?: boolean | null;
+  /** When `false`, orbit and zoom are disabled. Default `true`. */
+  isInteractive?: boolean | null;
 }
 
 /**
