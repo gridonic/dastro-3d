@@ -11,10 +11,10 @@ Follow every step in order. Step 2 defines `api_key`s that are effectively perma
 ## 1. Install the package
 
 ```bash
-npm i github:gridonic/dastro-3d#v0.1.6
+npm i github:gridonic/dastro-3d#v0.1.7
 ```
 
-Requires `dastro` ^2.1.5, `astro` ^6.3.5 and `@datocms/astro` ^0.6.12 — every Dastro project already has them.
+Requires `dastro` ^2.1.5 or ^3.0.0, `astro` ^6.3.5 or ^7, and `@datocms/astro` ^0.6.12 — every Dastro project already has them.
 
 ---
 
