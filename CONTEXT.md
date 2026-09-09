@@ -72,6 +72,7 @@ _Avoid_: installer, migration, setup script
 
 - [ADR-0001](./docs/adr/0001-sealed-viewer-three-js-stays-internal.md) — the **Model Viewer** is **Sealed**; three.js is never public API
 - [ADR-0002](./docs/adr/0002-no-compression-pipeline-editors-compress.md) — no compression pipeline; editors compress, Dato enforces the **Size Budget**
+- [ADR-0003](./docs/adr/0003-editor-preview-reuses-the-stage.md) — editor preview reuses the Stage via `dastro-3d/stage`; does not reimplement it (proposed)
 
 ## The seam
 
