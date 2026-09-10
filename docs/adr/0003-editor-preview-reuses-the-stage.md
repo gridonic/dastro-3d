@@ -38,9 +38,17 @@ Three facts constrain the answer:
    camera, PMREM/`RoomEnvironment` lighting, the three hardcoded
    environment presets, `OrbitControls`, `GLTFLoader` + `MeshoptDecoder`,
    bounding-sphere auto-framing, and `dispose()`. Its constructor is
-   `(canvas: HTMLCanvasElement, options: StageOptions)`. Its only
-   non-Three import is `import type`, erased at compile time. There is no
-   Astro, no Dastro, and no DatoCMS anywhere in the file.
+   `(canvas: HTMLCanvasElement, options: StageOptions)`, and no Astro,
+   Dastro or DatoCMS value is reachable from it at runtime.
+
+   Its *type* graph was another matter. It imported `ModelEnvironment`
+   from `components/component.types.ts`, whose first line imports
+   `AstroBuiltinAttributes` from `astro`. `import type` is erased at
+   runtime, but because the package has no build step the consumer
+   typechecks our raw `.ts` itself — so that one line made `astro` a
+   hard requirement of the engine. The pure vocabulary now lives in
+   `client/stage.types.ts`, which imports nothing, and
+   `component.types.ts` re-exports it.
 
 2. The package has no build step. `exports` maps a single subpath
    (`./components`) directly at `./src/components/index.ts`, and the
@@ -49,9 +57,12 @@ Three facts constrain the answer:
    resolving it pulls in `.astro` files it has no compiler for.
 
 3. Installing `dastro-3d` today also imposes its package-wide peer
-   dependencies: `astro ^6.3.5`, `@datocms/astro ^0.6.12`, and
-   `dastro` (a private GitHub dependency). A DatoCMS plugin needs none
-   of the three, and npm 7+ will attempt to install them automatically.
+   dependencies: `astro ^6.3.5 || ^7.0.0`, `@datocms/astro ^0.6.12`, and
+   `dastro ^2.1.5 || ^3.0.0` — the last resolving to
+   `git+ssh://git@github.com/gridonic/dastro.git`, so installing it at
+   all requires SSH access to a private repo. A DatoCMS plugin needs
+   none of the three, and npm 7+ will attempt to install them
+   automatically.
 
 ADR-0001 sealed the viewer: `scene`, `renderer` and `camera` are never
 exposed, and `three` stays a plain `dependency` rather than a
@@ -73,18 +84,36 @@ Specifically:
   existing `"./components"` entry is unchanged.
 - The exported surface is `ModelStage`, `StageOptions`,
   `ModelEnvironment`, `LoadTrigger`, `parseEnvironment`,
-  `parseLoadTrigger`. Nothing else.
+  `parseLoadTrigger`. Nothing else. `StageOptions` was not previously
+  exported, and the types and parsers are re-exported from
+  `stage.client.ts`, so the one entry file above covers the whole
+  surface without a barrel.
 - `scene`, `renderer` and `camera` remain private. ADR-0001 holds in
   full. What is exported is a class with a `load()/start()/stop()/
   dispose()` lifecycle, not a Three.js handle.
+- `ModelStage` gains `setEnvironment`, `setBackgroundColor` and
+  `setZoom` beside the existing `setAutoRotate`, so a preview can follow
+  an editor's field changes without being torn down and rebuilt. All of
+  them are cheap: the PMREM irradiance map is built from
+  `RoomEnvironment` and is identical across the three presets — they
+  differ only in background, exposure and intensity — so no setter
+  regenerates it, and `setZoom` re-places the camera from a radius
+  cached at load rather than re-reading the glb.
 - `three` remains a plain `dependency`. **The plugin must not declare
   `three` in its own dependencies**, so exactly one copy is bundled,
-  reached through `dastro-3d`.
+  reached through `dastro-3d`. `@types/three` moves from
+  `devDependencies` to `dependencies`: `three` ships no types of its
+  own, and a package that ships raw `.ts` makes its dependencies' types
+  part of its own contract.
 - `astro`, `@datocms/astro` and `dastro` move to
   `peerDependenciesMeta: { optional: true }`. Every Astro consumer
   already has all three installed by virtue of being an Astro/Dastro
   project, so nothing real is lost, and the plugin stops being forced to
   resolve a private GitHub repo it will never import.
+- The same three are added to `devDependencies`. They were previously
+  installed here *only* as a side effect of being non-optional peers,
+  so making them optional stops `npm run astro:check` — the repo's one
+  quality gate — from being able to run at all.
 - The plugin registers as a **field addon on the `model` file field**,
   rendering below the stock file picker rather than replacing it. The
   picker keeps working exactly as editors already know it.
@@ -122,6 +151,21 @@ same pixels. This is the property that makes the plugin worth building
 at all: a preview that can diverge from production is worse than no
 preview, and here divergence is structurally impossible.
 
+### What has been verified
+
+`npm pack` plus a throwaway TypeScript consumer — no `astro`, no
+`dastro`, no `three` of its own — typechecks `dastro-3d/stage` cleanly,
+resolves `three` and `@types/three` transitively, and installs without
+touching the private repo.
+
+The same probe importing `dastro-3d/components` fails with `Cannot find
+module 'astro'` at `component.types.ts:1`. That is precisely what
+`./stage` would have done before the type split, and precisely what a
+check on installing rather than typechecking would have missed.
+
+Still outstanding: nothing here proves a `.glb` *renders* outside Astro.
+The entry point resolves and typechecks; the runtime spike is separate.
+
 ## Consequences
 
 ### Good
@@ -156,10 +200,12 @@ preview, and here divergence is structurally impossible.
 - `peerDependenciesMeta.optional` weakens the install-time guardrail for
   Astro consumers. The recipe in `docs/install.instruction.md` becomes
   the place that guarantees those packages are present, rather than npm.
-- The plugin inherits `dastro-3d`'s version drift. The package is
-  currently pinned to `astro ^6.3.5` while `astro-boilerplate` is on
-  `^7.1.6`. That is a separate problem, but the plugin makes it more
-  expensive to keep ignoring.
+- The plugin inherits a version drift that sits one level down.
+  `dastro-3d` itself accepts `astro ^6.3.5 || ^7.0.0`; it is
+  `dastro@2.1.5` that pins `astro ^6.3.5`, while `astro-boilerplate` is
+  on `^7.1.6` and `dastro` v3.0.0 is tagged. This repo develops against
+  the 6.x/dastro-2.1.5 pair. That is a separate problem, but the plugin
+  makes it more expensive to keep ignoring.
 - Reading sibling settings inside a nested block is the fiddly part. The
   values live at `content3d → viewer → model3d`, reached via
   `ctx.formValues` and `ctx.fieldPath`. A file field's form value is
@@ -225,6 +271,10 @@ render.
 
 ## Open questions
 
+- `dispose()` frees geometries, materials, the PMREM target and the
+  renderer, but never calls `renderer.forceContextLoss()`. Browsers cap
+  live WebGL contexts at around 16, and an editor opening one block
+  after another is the first workload that will genuinely test this.
 - Exactly how DatoCMS Plugin SDK v2 exposes `formValues` for fields
   nested inside a `single_block` is not verified. If sibling resolution
   proves unreliable, the fallback is to preview the geometry using the

@@ -1,8 +1,5 @@
 import { BaseComponent, log } from 'dastro/client';
-import {
-  parseEnvironment,
-  parseLoadTrigger,
-} from '../components/component.types';
+import { parseEnvironment, parseLoadTrigger } from './stage.types';
 import type { ModelStage } from './stage.client';
 
 /** How early an `approach` viewer starts loading, ahead of entering the viewport. */
@@ -13,8 +10,7 @@ function parseOptionalZoom(
 ): number | undefined {
   if (value === undefined) return undefined;
 
-  const zoom =
-    typeof value === 'number' ? value : Number.parseFloat(value);
+  const zoom = typeof value === 'number' ? value : Number.parseFloat(value);
   return Number.isFinite(zoom) ? zoom : undefined;
 }
 

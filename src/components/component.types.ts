@@ -71,31 +71,9 @@ export interface ModelPosterData {
   } | null;
 }
 
-/** When three.js and the Model are fetched. */
-export type LoadTrigger = 'approach' | 'click';
-
-/** Lighting preset. Named environments are built in code, not fetched. */
-export type ModelEnvironment = 'studio' | 'neutral' | 'dark';
-
-const LOAD_TRIGGERS: readonly LoadTrigger[] = ['approach', 'click'];
-const ENVIRONMENTS: readonly ModelEnvironment[] = ['studio', 'neutral', 'dark'];
-
 /**
- * Dato select fields arrive stega-encoded in draft mode, so the raw value never
- * matches a union member directly. Callers must strip stega before narrowing.
+ * Re-exported so the components keep a single types facade. The definitions
+ * live in `client/stage.types.ts`, which imports nothing — see the note there.
  */
-export function parseLoadTrigger(
-  value: string | null | undefined,
-): LoadTrigger {
-  return LOAD_TRIGGERS.includes(value as LoadTrigger)
-    ? (value as LoadTrigger)
-    : 'approach';
-}
-
-export function parseEnvironment(
-  value: string | null | undefined,
-): ModelEnvironment {
-  return ENVIRONMENTS.includes(value as ModelEnvironment)
-    ? (value as ModelEnvironment)
-    : 'studio';
-}
+export type { LoadTrigger, ModelEnvironment } from '../client/stage.types';
+export { parseEnvironment, parseLoadTrigger } from '../client/stage.types';

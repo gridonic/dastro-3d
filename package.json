@@ -8,7 +8,8 @@
     "astro:check:watch": "astro check --watch --preserveWatchOutput"
   },
   "exports": {
-    "./components": "./src/components/index.ts"
+    "./components": "./src/components/index.ts",
+    "./stage": "./src/client/stage.client.ts"
   },
   "files": [
     "docs",
@@ -24,12 +25,26 @@
     "astro": "^6.3.5 || ^7.0.0",
     "dastro": "^2.1.5 || ^3.0.0"
   },
+  "peerDependenciesMeta": {
+    "@datocms/astro": {
+      "optional": true
+    },
+    "astro": {
+      "optional": true
+    },
+    "dastro": {
+      "optional": true
+    }
+  },
   "dependencies": {
+    "@types/three": "^0.185.1",
     "three": "^0.185.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "@types/three": "^0.185.1",
+    "@datocms/astro": "^0.6.12",
+    "astro": "^6.3.5",
+    "dastro": "github:gridonic/dastro#semver:^2.1.5",
     "prettier": "^3.8.3",
     "prettier-plugin-astro": "^0.14.1",
     "sass-embedded": "^1.99.0",

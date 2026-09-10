@@ -14,17 +14,23 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import type { ModelEnvironment } from '../components/component.types';
+import type { ModelEnvironment } from './stage.types';
 
 /**
- * The Viewer Chunk.
+ * The Viewer Chunk, and the `dastro-3d/stage` entry point (ADR-0003).
  *
- * This module is only ever reached through a dynamic import, which is what
- * keeps three.js out of the page's main bundle. Nothing here is exported from
- * the package — three.js is not public API (ADR-0001).
+ * The Astro components only ever reach it through a dynamic import, which is
+ * what keeps three.js out of the page's main bundle.
+ *
+ * What is public is the `load`/`start`/`stop`/`dispose` lifecycle. `scene`,
+ * `renderer` and `camera` stay private and no escape hatch is added — three.js
+ * itself is not public API (ADR-0001).
  */
 
-interface StageOptions {
+export type { LoadTrigger, ModelEnvironment } from './stage.types';
+export { parseEnvironment, parseLoadTrigger } from './stage.types';
+
+export interface StageOptions {
   /** Lighting preset. Defaults to `studio` when omitted (e.g. a custom background is set). */
   environment?: ModelEnvironment;
   autoRotate: boolean;
@@ -61,16 +67,22 @@ export class ModelStage {
   private readonly controls: OrbitControls;
   private readonly pmrem: PMREMGenerator;
   private readonly resizeObserver: ResizeObserver;
-  private readonly zoom: number;
+
+  private environment: ModelEnvironment;
+  private backgroundColor: string | undefined;
+  private zoom: number;
 
   private model: Object3D | null = null;
+  /** Bounding radius of the framed Model, so the camera can be re-placed without re-centring it. */
+  private radius = 0;
   private frameId: number | null = null;
 
   constructor(
     private readonly $canvas: HTMLCanvasElement,
     options: StageOptions,
   ) {
-    const preset = ENVIRONMENTS[options.environment ?? 'studio'];
+    this.environment = options.environment ?? 'studio';
+    this.backgroundColor = options.backgroundColor;
     this.zoom = options.zoom ?? FRAMING_MARGIN;
 
     this.renderer = new WebGLRenderer({
@@ -80,18 +92,17 @@ export class ModelStage {
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = preset.exposure;
 
-    this.scene.background = options.backgroundColor
-      ? new Color(options.backgroundColor)
-      : new Color(preset.background);
-    this.scene.environmentIntensity = preset.intensity;
-
+    // The irradiance map is the same for all three presets — they differ only
+    // in background, exposure and intensity — so changing preset later never
+    // has to regenerate it.
     this.pmrem = new PMREMGenerator(this.renderer);
     this.scene.environment = this.pmrem.fromScene(
       new RoomEnvironment(),
       0.04,
     ).texture;
+
+    this.applyEnvironment();
 
     this.camera = new PerspectiveCamera(45, 1, 0.1, 1000);
 
@@ -132,17 +143,34 @@ export class ModelStage {
     const sphere = box.getBoundingSphere(new Sphere());
 
     $model.position.sub(sphere.center);
+    this.radius = sphere.radius;
+
+    this.positionCamera();
+  }
+
+  private positionCamera(): void {
+    if (!this.radius) return;
 
     const fov = MathUtils.degToRad(this.camera.fov);
-    const distance = (sphere.radius / Math.sin(fov / 2)) * this.zoom;
+    const distance = (this.radius / Math.sin(fov / 2)) * this.zoom;
 
-    this.camera.position.set(0, sphere.radius * 0.25, distance);
+    this.camera.position.set(0, this.radius * 0.25, distance);
     this.camera.near = distance / 100;
     this.camera.far = distance * 100;
     this.camera.updateProjectionMatrix();
 
     this.controls.target.set(0, 0, 0);
     this.controls.update();
+  }
+
+  private applyEnvironment(): void {
+    const preset = ENVIRONMENTS[this.environment];
+
+    this.renderer.toneMappingExposure = preset.exposure;
+    this.scene.environmentIntensity = preset.intensity;
+    this.scene.background = new Color(
+      this.backgroundColor ?? preset.background,
+    );
   }
 
   private resize(): void {
@@ -176,6 +204,24 @@ export class ModelStage {
 
   setAutoRotate(autoRotate: boolean): void {
     this.controls.autoRotate = autoRotate;
+  }
+
+  /** Ignored for the background while a `backgroundColor` is set. */
+  setEnvironment(environment: ModelEnvironment): void {
+    this.environment = environment;
+    this.applyEnvironment();
+  }
+
+  /** Pass `undefined` to restore the current preset's own background. */
+  setBackgroundColor(backgroundColor: string | undefined): void {
+    this.backgroundColor = backgroundColor;
+    this.applyEnvironment();
+  }
+
+  /** Re-frames the Model, which discards any orbiting the user has done. */
+  setZoom(zoom: number): void {
+    this.zoom = zoom;
+    this.positionCamera();
   }
 
   dispose(): void {
